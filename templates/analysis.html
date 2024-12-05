@@ -1,0 +1,64 @@
+<!-- analysis.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>데이터 분석 결과</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>데이터 분석 결과</h1>
+            <nav>
+                <a href="{{ url_for('upload_file') }}" class="button">새로운 분석 시작</a>
+            </nav>
+        </header>
+
+        <main>
+            <section class="data-overview">
+                <h2>데이터 개요</h2>
+                <div class="info-cards">
+                    <div class="card">
+                        <h3>데이터 크기</h3>
+                        <p>행: {{ stats.row_count }}</p>
+                        <p>열: {{ stats.column_count }}</p>
+                    </div>
+                    <div class="card">
+                        <h3>결측치</h3>
+                        <p>총 개수: {{ stats.missing_count }}</p>
+                        <p>비율: {{ stats.missing_ratio }}%</p>
+                    </div>
+                    <div class="card">
+                        <h3>데이터 타입</h3>
+                        <p>수치형: {{ stats.numeric_cols }}</p>
+                        <p>범주형: {{ stats.categorical_cols }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="visualization-selection">
+                <h2>시각화 선택</h2>
+                <form id="visualization-form" method="POST" action="{{ url_for('visualize') }}">
+                    <label><input type="checkbox" name="visualization_types" value="histogram"> 히스토그램</label>
+                    <label><input type="checkbox" name="visualization_types" value="correlation_heatmap"> 상관관계 히트맵</label>
+                    <label><input type="checkbox" name="visualization_types" value="boxplot"> 박스 플롯</label>
+                    <label><input type="checkbox" name="visualization_types" value="pairplot"> 산점도 행렬</label>
+                    <input type="submit" value="시각화 생성">
+                </form>
+                <div id="loading" style="display:none;">로딩 중...</div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#visualization-form').on('submit', function() {
+                $("#loading").show(); // 로딩 중 표시
+            });
+        });
+    </script>
+</body>
+</html>

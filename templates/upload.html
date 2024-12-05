@@ -1,0 +1,17 @@
+<!-- upload.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>데이터 분석 웹앱</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>데이터 분석 및 머신러닝 웹앱</h1>
+        <form method="post" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".csv,.xlsx">
+            <input type="submit" value="업로드">
+        </form>
+    </div>
+</body>
+</html>

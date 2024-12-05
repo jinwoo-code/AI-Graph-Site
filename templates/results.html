@@ -1,0 +1,138 @@
+<!-- results.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>모델 분석 결과</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>모델 분석 결과</h1>
+            <nav>
+                <a href="{{ url_for('upload_file') }}" class="button">새 분석</a>
+                <button onclick="downloadResults()" class="button">결과 다운로드</button>
+            </nav>
+        </header>
+
+        <main>
+            <!-- 모델 성능 개요 -->
+            <section class="model-overview">
+                <h2>모델 성능 요약</h2>
+                <div class="info-cards">
+                    <div class="card">
+                        <h3>모델 유형</h3>
+                        <p>{{ model_type }}</p>
+                    </div>
+                    <div class="card">
+                        <h3>정확도</h3>
+                        {% if model_type == 'regression' %}
+                        <p>R² 점수: {{ metrics['score']|round(4) }}</p>
+                        {% elif model_type == 'classification' %}
+                        <p>교차 검증 점수: {{ metrics['score']|round(4) }}</p>
+                        {% endif %}
+                    </div>
+                    {% if model_type != 'clustering' %}
+                    <div class="card">
+                        <h3>교차 검증 점수</h3>
+                        <p>{{ metrics['cv_score']|round(4) }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- 상세 성능 지표 -->
+            <section class="performance-metrics">
+                <h2>상세 성능 지표</h2>
+                {% if model_type == 'classification' %}
+                <!-- 분류 모델 지표 -->
+                <div class="metrics-container">
+                    <div class="metric-card">
+                        <h3>혼동 행렬</h3>
+                        <div class="confusion-matrix">
+                            {{ metrics['confusion_matrix']|safe }}
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>분류 보고서</h3>
+                        <div class="classification-report">
+                            {{ metrics['classification_report']|safe }}
+                        </div>
+                    </div>
+                </div>
+                {% elif model_type == 'regression' %}
+                <!-- 회귀 모델 지표 -->
+                <div class="metrics-container">
+                    <div class="metric-card">
+                        <h3>오차 지표</h3>
+                        <p>MAE: {{ metrics['mae']|round(4) }}</p>
+                        <p>MSE: {{ metrics['mse']|round(4) }}</p>
+                        <p>RMSE: {{ metrics['rmse']|round(4) }}</p>
+                        <p>R²: {{ metrics['r2']|round(4) }}</p>
+                    </div>
+                    <div class="metric-card">
+                        <h3>잔차 플롯</h3>
+                        <img src="data:image/png;base64,{{ plots['residual_plot'] }}"
+                             alt="잔차 플롯"
+                             class="chart">
+                    </div>
+                </div>
+                {% else %}
+                <!-- 군집화 모델 지표 -->
+                <div class="metrics-container">
+                    <div class="metric-card">
+                        <h3>군집 분포</h3>
+                        <img src="data:image/png;base64,{{ plots['cluster_plot'] }}"
+                             alt="군집 분포"
+                             class="chart">
+                    </div>
+                    <div class="metric-card">
+                        <h3>실루엣 점수</h3>
+                        <p>{{ metrics['silhouette_score']|round(4) }}</p>
+                    </div>
+                </div>
+                {% endif %}
+            </section>
+
+            <!-- 특성 중요도 -->
+            {% if model_type != 'clustering' %}
+            <section class="feature-importance">
+                <h2>특성 중요도</h2>
+                <div class="chart-wrapper">
+                    <img src="data:image/png;base64,{{ plots['feature_importance'] }}"
+                         alt="특성 중요도"
+                         class="chart">
+                </div>
+            </section>
+            {% endif %}
+
+            <!-- 예측 섹션 -->
+            <section class="predictions">
+                <h2>새로운 데이터 예측</h2>
+                <form action="{{ url_for('predict') }}" method="post" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="prediction_file">예측할 데이터 파일:</label>
+                        <input type="file" id="prediction_file" name="file" accept=".csv,.xlsx">
+                    </div>
+                    <button type="submit" class="button">예측하기</button>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        function downloadResults() {
+            const element = document.createElement('a');
+            element.setAttribute('href', '{{ url_for("download_results") }}');
+            element.setAttribute('download', 'model_results.csv');
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+    </script>
+</body>
+</html>

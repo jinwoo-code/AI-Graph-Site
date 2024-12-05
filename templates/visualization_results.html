@@ -1,0 +1,57 @@
+<!-- visualization_results.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>시각화 결과</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>선택한 시각화 결과</h1>
+            <nav>
+                <a href="{{ url_for('upload_file') }}" class="button">새로운 분석 시작</a>
+            </nav>
+        </header>
+
+        <main>
+            {% for key, value in visualizations.items() %}
+            <section class="visualization">
+                <h2>{{ key.replace('_', ' ').title() }}</h2>
+                <img src="data:image/png;base64,{{ value }}" alt="{{ key }}" class="chart">
+            </section>
+            {% endfor %}
+
+            <section class="visualization-selection">
+                <h2>추가 시각화 선택</h2>
+                <form id="additional-visualization-form" method="POST" action="{{ url_for('visualize') }}">
+                    <label><input type="checkbox" name="visualization_types" value="histogram"> 히스토그램</label>
+                    <label><input type="checkbox" name="visualization_types" value="correlation_heatmap"> 상관관계 히트맵</label>
+                    <label><input type="checkbox" name="visualization_types" value="boxplot"> 박스 플롯</label>
+                    <label><input type="checkbox" name="visualization_types" value="pairplot"> 산점도 행렬</label>
+                    <input type="submit" value="추가 시각화 생성">
+                </form>
+            </section>
+
+            <section class="machine-learning">
+                <h2>머신러닝 모델 선택</h2>
+                <form action="{{ url_for('train_model') }}" method="post">
+                    <select name="model_type" required>
+                        <option value="regression">회귀</option>
+                        <option value="classification">분류</option>
+                    </select>
+                    <select name="target" required>
+                        <option value="">목표 변수 선택</option>
+                        {% for column in columns %}
+                        <option value="{{ column }}">{{ column }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="submit" value="모델 훈련">
+                </form>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
